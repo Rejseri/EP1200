@@ -100,5 +100,27 @@ class Parser(object):
             self.commandType = C_POP #Is it pop
             self.arg1 = parts[1]
             self.arg2 = parts[2]
+        elif parts[0] in T_ARITHMETIC: #Is it an arithmetic command?
+            self.commandType = C_ARITHMETIC
+            self.arg1 = parts[0]
+        elif parts[0] == 'label':
+            self.commandType = C_LABEL
+            self.arg1 = parts[1]
+        elif parts[0] == 'goto':
+            self.commandType = C_GOTO
+            self.arg1 = parts[1]
+        elif parts[0] == 'if-goto':
+            self.commandType = C_IF
+            self.arg1 = parts[1]
+        elif parts[0] == 'function':
+            self.commandType = C_FUNCTION
+            self.arg1 = parts[1]
+            self.arg2 = int(parts[2])
+        elif parts[0] == 'call':
+            self.commandType = C_CALL
+            self.arg1 = parts[1]
+            self.arg2 = int(parts[2])
+        elif parts[0] == 'return':
+            self.commandType = C_RETURN
         return None	
 
