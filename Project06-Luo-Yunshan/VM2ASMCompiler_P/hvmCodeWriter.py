@@ -141,7 +141,89 @@ class CodeWriter(object):
         The unary and the logical and arithmetic binary operators are simple to compile. 
          The three comparison operators (EQ, LT and GT) do not exist in the assembly language. The corresponding assembly commands are the conditional jumps JEQ, JLT and JGT. You need to implement the VM operations using these conditional jumps. You need two labels, one for the true condition and one for the false condition and you have to put the correct result on the stack.
         """
-        
+        if command == T_ADD:
+            code = "@SP" + "\n"
+            code += "M=M-1" + "\n"
+            code += "A=M" + "\n"
+            code += "D=M" + "\n"
+            code += "A=A-1" + "\n"
+            code += "M=M+D" + "\n"
+            self.Write(code)
+
+        elif command == T_SUB:
+            code = "@SP" + "\n"
+            code += "M=M-1" + "\n"
+            code += "A=M" + "\n"
+            code += "D=M" + "\n"
+            code += "A=A-1" + "\n"
+            code += "M=M-D" + "\n"
+            self.Write(code)
+
+        elif command == T_NEG:
+            code = "@SP" + "\n"
+            code += "A=M-1" + "\n"
+            code += "M=-M" + "\n"
+            self.Write(code)
+
+        elif command == T_AND:
+            code = "@SP" + "\n"
+            code += "M=M-1" + "\n"
+            code += "A=M" + "\n"
+            code += "D=M" + "\n"
+            code += "A=A-1" + "\n"
+            code += "M=M&D" + "\n"
+            self.Write(code)
+
+        elif command == T_OR:
+            code = "@SP" + "\n"
+            code += "M=M-1" + "\n"
+            code += "A=M" + "\n"
+            code += "D=M" + "\n"
+            code += "A=A-1" + "\n"
+            code += "M=M|D" + "\n"
+            self.Write(code)
+
+        elif command == T_NOT:
+            code = "@SP" + "\n"
+            code += "A=M-1" + "\n"
+            code += "M=!M" + "\n"
+            self.Write(code)
+
+        elif command in (T_EQ, T_GT, T_LT):
+            label = self._UniqueLabel()
+            true_label = "TRUE" + label
+            end_label = "END" + label
+
+            if command == T_EQ:
+                jump = "JEQ"
+            elif command == T_GT:
+                jump = "JGT"
+            else:
+                jump = "JLT"
+
+            # pop two values, compute x - y
+            code = "@SP" + "\n"
+            code += "M=M-1" + "\n"
+            code += "A=M" + "\n"
+            code += "D=M" + "\n"
+            code += "A=A-1" + "\n"
+            code += "D=M-D" + "\n"
+            # jump to true if condition holds
+            code += "@" + true_label + "\n"
+            code += "D;" + jump + "\n"
+            # false case: push 0
+            code += "@SP" + "\n"
+            code += "A=M-1" + "\n"
+            code += "M=0" + "\n"
+            code += "@" + end_label + "\n"
+            code += "0;JMP" + "\n"
+            # true case: push -1
+            code += "(" + true_label + ")" + "\n"
+            code += "@SP" + "\n"
+            code += "A=M-1" + "\n"
+            code += "M=-1" + "\n"
+            code += "(" + end_label + ")" + "\n"
+            self.Write(code)
     def WriteInit(self, sysinit = True):
         """
         Write the VM initialization code:
