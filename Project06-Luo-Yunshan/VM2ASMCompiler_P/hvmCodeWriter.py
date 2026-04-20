@@ -120,16 +120,133 @@ class CodeWriter(object):
     PUSH constant is implemented as an example. Other solutions are possible too.
 
         """
-        if commandType == C_PUSH: #We add something to the stack
-            if segment == 'constant':
-                code = "@" + index + "," 
-                code += "D=A,"
-                code += "@SP,"
-                code += "A=M,"
-                code += "M=D,"
-                code += "@SP,"
-                code += "M=M+1"
-                self._WriteCode(code)
+        self.needHalt = False
+        code = ''
+
+        if commandType == C_PUSH:
+            if segment in (T_ARGUMENT, T_LOCAL, T_THIS, T_THAT, T_STATIC):
+                if segment == T_ARGUMENT:
+                    segmentname = "ARG"
+                elif segment == T_LOCAL:
+                    segmentname = "LCL"
+                elif segment == T_THIS:
+                    segmentname = "THIS"
+                elif segment == T_THAT:
+                    segmentname = "THAT"
+                elif segment == T_STATIC:
+                    segmentname = str(self.fileName) + "." + str(index)
+                self.Write("// push " + segment + " " + str(index))
+                code += "@" + str(index) + "\n"
+                code += "D=A" + "\n"
+                code += "@" + segmentname + "\n"
+                code += "A=M+D" + "\n"
+                code += "D=M" + "\n"
+                code += "@SP" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M+1" + "\n"
+
+            elif segment == T_TEMP:
+                segmentname = "R" + str(5 + int(index))
+                self.Write("// push " + segment + " " + str(index))
+                code += "@" + segmentname + "\n"
+                code += "D=M" + "\n"
+                code += "@SP" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M+1" + "\n"
+
+            elif segment == T_CONSTANT:
+                self.Write("// push " + segment + " " + str(index))
+                code += "@" + str(index) + "\n"
+                code += "D=A" + "\n"
+                code += "@SP" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M+1" + "\n"
+
+            elif segment == T_POINTER:
+                self.Write("// push " + segment + " " + str(index))
+                if int(index) == 0:
+                    code += "@THIS" + "\n"
+                elif int(index) == 1:
+                    code += "@THAT" + "\n"
+                code += "D=M" + "\n"
+                code += "@SP" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M+1" + "\n"
+
+            self.Write(code)
+
+        elif commandType == C_POP:
+            if segment in (T_ARGUMENT, T_LOCAL, T_THIS, T_THAT, T_STATIC):
+                if segment == T_ARGUMENT:
+                    segmentname = "ARG"
+                elif segment == T_LOCAL:
+                    segmentname = "LCL"
+                elif segment == T_THIS:
+                    segmentname = "THIS"
+                elif segment == T_THAT:
+                    segmentname = "THAT"
+                elif segment == T_STATIC:
+                    segmentname = str(self.fileName) + "." + str(index)
+                self.Write("// pop " + segment + " " + str(index))
+                code += "@" + str(index) + "\n"
+                code += "D=A" + "\n"
+                code += "@" + segmentname + "\n"
+                code += "D=M+D" + "\n"
+                code += "@R13" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M-1" + "\n"
+                code += "A=M" + "\n"
+                code += "D=M" + "\n"
+                code += "M=0" + "\n"
+                code += "@R13" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+
+            elif segment == T_TEMP:
+                segmentname = "R" + str(5 + int(index))
+                self.Write("// pop " + segment + " " + str(index))
+                code += "@" + segmentname + "\n"
+                code += "D=A" + "\n"
+                code += "@R13" + "\n"
+                code += "M=D" + "\n"
+                code += "@SP" + "\n"
+                code += "M=M-1" + "\n"
+                code += "A=M" + "\n"
+                code += "D=M" + "\n"
+                code += "M=0" + "\n"
+                code += "@R13" + "\n"
+                code += "A=M" + "\n"
+                code += "M=D" + "\n"
+
+            elif segment == T_POINTER:
+                self.Write("// pop " + segment + " " + str(index))
+                if int(index) == 0:
+                    code += "@SP" + "\n"
+                    code += "M=M-1" + "\n"
+                    code += "A=M" + "\n"
+                    code += "D=M" + "\n"
+                    code += "M=0" + "\n"
+                    code += "@THIS" + "\n"
+                    code += "M=D" + "\n"
+                elif int(index) == 1:
+                    code += "@SP" + "\n"
+                    code += "M=M-1" + "\n"
+                    code += "A=M" + "\n"
+                    code += "D=M" + "\n"
+                    code += "M=0" + "\n"
+                    code += "@THAT" + "\n"
+                    code += "M=D" + "\n"
+
+            self.Write(code)
 
 
     def WriteArithmetic(self, command):
