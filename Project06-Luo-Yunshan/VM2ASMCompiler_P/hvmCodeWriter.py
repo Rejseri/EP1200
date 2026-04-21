@@ -139,7 +139,7 @@ class CodeWriter(object):
                 code += "@" + str(index) + "\n"
                 code += "D=A" + "\n"
                 code += "@" + segmentname + "\n"
-                code += "D=M+D" + "\n"
+                code += "D=D+M" + "\n"
                 code += "A=D" + "\n"
                 code += "D=M" + "\n"
                 code += "@SP" + "\n"
@@ -200,7 +200,7 @@ class CodeWriter(object):
                 code += "@" + str(index) + "\n"
                 code += "D=A" + "\n"
                 code += "@" + segmentname + "\n"
-                code += "D=M+D" + "\n"
+                code += "D=D+M" + "\n"
                 code += "@R13" + "\n"
                 code += "M=D" + "\n"
                 code += "@SP" + "\n"
@@ -265,7 +265,7 @@ class CodeWriter(object):
             code += "A=M" + "\n"
             code += "D=M" + "\n"
             code += "A=A-1" + "\n"
-            code += "M=M+D" + "\n"
+            code += "M=D+M" + "\n"
             self.Write(code)
 
         elif command == T_SUB:
